@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alion AI - مستقبل إدارة الصيانة</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7c3aed;
+            --primary-light: #8b5cf6;
+            --primary-dark: #6d28d9;
+            --secondary: #0f172a;
+            --accent: #f97316;
+            --surface: rgba(255, 255, 255, 0.95);
+            --glass: rgba(255, 255, 255, 0.1);
+            --text-light: #f8fafc;
+            --text-dark: #0f172a;
+            --border-glass: rgba(255, 255, 255, 0.2);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #2d1b4e 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .gradient-sphere {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, rgba(45, 27, 78, 0) 70%);
+            border-radius: 50%;
+            top: -200px;
+            left: -200px;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .gradient-sphere-2 {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, rgba(45, 27, 78, 0) 70%);
+            border-radius: 50%;
+            bottom: -100px;
+            right: -100px;
+            animation: float 15s infinite ease-in-out reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, 50px) scale(1.1); }
+            50% { transform: translate(0, 100px) scale(0.9); }
+            75% { transform: translate(-50px, 50px) scale(1.05); }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .split-layout {
+            display: flex;
+            width: 1400px;
+            max-width: 100%;
+            min-height: 700px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-radius: 3rem;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-glass);
+        }
+
+        /* Left Side - Robot & Typing */
+        .left-side {
+            flex: 1.2;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(15, 23, 42, 0.4) 100%);
+            border-left: 1px solid var(--border-glass);
+        }
+
+        .robot-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .robot-svg {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            filter: drop-shadow(0 10px 20px rgba(124, 58, 237, 0.4));
+            animation: robotFloat 3s infinite ease-in-out;
+        }
+
+        @keyframes robotFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .robot-eyes {
+            transition: transform 0.1s ease;
+        }
+
+        .eye-left, .eye-right {
+            transition: transform 0.1s ease;
+        }
+
+        .robot-name {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin-top: 1rem;
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        .robot-name span {
+            color: var(--primary-light);
+            /* إصلاح مشكلة background-clip */
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -moz-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -moz-text-fill-color: transparent;
+        }
+
+        .typing-container {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 1px solid var(--border-glass);
+        }
+
+        .typing-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .typing-text i {
+            color: var(--primary-light);
+            margin-left: 0.5rem;
+        }
+
+        #typewriter {
+            display: inline-block;
+            min-height: 3rem;
+        }
+
+        #typewriter::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .typing-subtext {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Right Side - Auth Forms */
+        .right-side {
+            flex: 0.8;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #f1f5f9;
+            padding: 0.5rem;
+            border-radius: 1rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-light);
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: 0.3s;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding-top: 2rem;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .footer a:hover {
+            background: rgba(124, 58, 237, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            
+            .left-side {
+                padding: 2rem;
+            }
+            
+            .robot-svg {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .typing-text {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="gradient-sphere"></div>
+        <div class="gradient-sphere-2"></div>
+    </div>
+
+    <div class="main-container">
+        <div class="split-layout">
+            <!-- Left Side - Robot and Typing -->
+            <div class="left-side">
+                <div class="robot-container">
+                    <svg class="robot-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Robot Head -->
+                        <rect x="40" y="30" width="120" height="120" rx="30" fill="url(#robotGradient)" stroke="white" stroke-width="3"/>
+                        
+                        <!-- Robot Antenna -->
+                        <circle cx="100" cy="20" r="8" fill="#f97316"/>
+                        <line x1="100" y1="20" x2="100" y2="30" stroke="white" stroke-width="3"/>
+                        
+                        <!-- Robot Eyes -->
+                        <g class="robot-eyes">
+                            <circle class="eye-left" cx="70" cy="75" r="12" fill="white"/>
+                            <circle class="eye-right" cx="130" cy="75" r="12" fill="white"/>
+                            <circle class="pupil-left" cx="70" cy="75" r="6" fill="#0f172a"/>
+                            <circle class="pupil-right" cx="130" cy="75" r="6" fill="#0f172a"/>
+                        </g>
+                        
+                        <!-- Robot Mouth -->
+                        <path d="M70 110 Q100 130, 130 110" stroke="white" stroke-width="4" fill="none"/>
+                        
+                        <!-- Gradient Definition -->
+                        <defs>
+                            <linearGradient id="robotGradient" x1="40" y1="30" x2="160" y2="150">
+                                <stop offset="0%" stop-color="#7c3aed"/>
+                                <stop offset="100%" stop-color="#6d28d9"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="robot-name">مرحباً أنا <span>Alion</span></div>
+                </div>
+                
+                <div class="typing-container">
+                    <div class="typing-text">
+                        <i class="fas fa-robot"></i>
+                        <span id="typewriter"></span>
+                    </div>
+                    <div class="typing-subtext">
+                        الذكاء الاصطناعي يقود مستقبل إدارة الصيانة
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side - Auth Forms -->
+            <div class="right-side">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <h1>نظام الدخول المتقدم</h1>
+                        <p>مركز الصيانة الذكي - AK Ultra Pro</p>
+                    </div>
+                    
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('login')">تسجيل الدخول</button>
+                        <button class="tab-btn" onclick="switchTab('register')">إنشاء حساب جديد</button>
+                    </div>
+                    
+                    <div id="alertMessage" style="display:none"></div>
+                    
+                    <!-- Login Form -->
+                    <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> اسم المستخدم</label>
+                            <input type="text" class="form-control" id="loginUsername" placeholder="أدخل اسم المستخدم" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="أدخل كلمة المرور" required>
+                        </div>
+                        
+                        <button type="submit" class="btn" id="loginBtn">
+                            <span>تسجيل الدخول</span>
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </form>
+                    
+                    <!-- Register Form -->
+                    <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> اسم المستخدم</label>
+                            <input type="text" class="form-control" id="regUsername" placeholder="اختر اسم مستخدم" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                            <input type="email" class="form-control" id="regEmail" placeholder="example@domain.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                            <input type="password" class="form-control" id="regPassword" placeholder="أدخل كلمة المرور" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label><i class="fas fa-check-circle"></i> تأكيد كلمة المرور</label>
+                            <input type="password" class="form-control" id="regConfirmPassword" placeholder="أعد إدخال كلمة المرور" required>
+                        </div>
+                        
+                        <button type="submit" class="btn" id="registerBtn">
+                            <span>إنشاء حساب</span>
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Footer -->
+                <div class="footer">
+                    <a href="https://www.facebook.com/ali.khaled.244644" target="_blank">
+                        <i class="fab fa-facebook"></i> حقوق التطوير: Ali Khaled
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = "https://script.google.com/macros/s/AKfycbxzYt4IaxuuAZf_zGQOnoHGw7Q6asnN4z_6WClQkxOBBwRrG2w37_QAAoXVKc-ENAOnWQ/exec";
+        
+        // Typing Animation Phrases
+        const phrases = [
+            "الذكاء الاصطناعي Alion يرحب بك ",
+            "الذكاء الاصطناعي يدير مشروعك مكانك ",
+            "أول سيستم إداري مدمج بالذكاء الاصطناعي ",
+            "نظام إدارة الصيانة المتطور ",
+            "Alion AI - مستقبل الإدارة الذكية "
+        ];
+        
+        let currentPhraseIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+        let typewriterElement = document.getElementById('typewriter');
+        
+        function typeEffect() {
+            const currentPhrase = phrases[currentPhraseIndex];
+            
+            if (isDeleting) {
+                currentCharIndex--;
+            } else {
+                currentCharIndex++;
+            }
+            
+            typewriterElement.textContent = currentPhrase.substring(0, currentCharIndex);
+            
+            if (!isDeleting && currentCharIndex === currentPhrase.length) {
+                isDeleting = true;
+                setTimeout(typeEffect, 2000);
+            } else if (isDeleting && currentCharIndex === 0) {
+                isDeleting = false;
+                currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length;
+                setTimeout(typeEffect, 500);
+            } else {
+                setTimeout(typeEffect, isDeleting ? 50 : 100);
+            }
+        }
+        
+        // Start typing animation
+        setTimeout(typeEffect, 1000);
+        
+        // Robot Eye Tracking
+        document.addEventListener('mousemove', (e) => {
+            const robot = document.querySelector('.robot-svg');
+            const robotRect = robot.getBoundingClientRect();
+            const robotCenterX = robotRect.left + robotRect.width / 2;
+            const robotCenterY = robotRect.top + robotRect.height / 2;
+            
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            const deltaX = mouseX - robotCenterX;
+            const deltaY = mouseY - robotCenterY;
+            
+            const angle = Math.atan2(deltaY, deltaX);
+            const distance = Math.min(8, Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 20);
+            
+            const eyeMoveX = Math.cos(angle) * distance;
+            const eyeMoveY = Math.sin(angle) * distance;
+            
+            const pupils = document.querySelectorAll('.pupil-left, .pupil-right');
+            pupils.forEach(pupil => {
+                // الحصول على المواقع الأصلية وإعادة تعيينها
+                const originalX = pupil.classList.contains('pupil-left') ? 70 : 130;
+                const originalY = 75;
+                
+                pupil.setAttribute('cx', originalX + eyeMoveX);
+                pupil.setAttribute('cy', originalY + eyeMoveY);
+            });
+        });
+        
+        // Session Check
+        (function checkSession() {
+            const currentUser = sessionStorage.getItem("currentUser");
+            if (currentUser) {
+                window.location.href = "dashboard.html";
+            }
+        })();
+        
+        // Switch Tab Function
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll(".tab-btn");
+            const forms = document.querySelectorAll(".auth-form");
+            
+            tabs.forEach(t => t.classList.remove("active"));
+            forms.forEach(f => f.classList.remove("active"));
+            
+            if (tab === "login") {
+                tabs[0].classList.add("active");
+                document.getElementById("loginForm").classList.add("active");
+            } else {
+                tabs[1].classList.add("active");
+                document.getElementById("registerForm").classList.add("active");
+            }
+            
+            hideAlert();
+        }
+        
+        // Alert Functions
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById("alertMessage");
+            alertDiv.style.display = "block";
+            alertDiv.className = `alert alert-${type}`;
+            
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = 'check-circle';
+                    break;
+                case 'error':
+                    icon = 'exclamation-circle';
+                    break;
+                case 'warning':
+                    icon = 'exclamation-triangle';
+                    break;
+            }
+            
+            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+        }
+        
+        function hideAlert() {
+            document.getElementById("alertMessage").style.display = "none";
+        }
+        
+        // Loading State
+        function setLoading(buttonId, isLoading) {
+            const btn = document.getElementById(buttonId);
+            const originalText = btn.querySelector("span").textContent;
+            
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner"></span><span> جاري التحميل...</span>';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<span>${originalText}</span> ${buttonId === 'loginBtn' ? '<i class="fas fa-arrow-left"></i>' : '<i class="fas fa-user-plus"></i>'}`;
+            }
+        }
+        
+        // Login Handler
+        async function handleLogin(event) {
+            event.preventDefault();
+            hideAlert();
+            
+            const username = document.getElementById("loginUsername").value.trim();
+            const password = document.getElementById("loginPassword").value;
+            
+            if (!username || !password) {
+                showAlert("جميع الحقول مطلوبة", "error");
+                return;
+            }
+            
+            setLoading("loginBtn", true);
+            
+            try {
+                const params = new URLSearchParams();
+                params.append("action", "login");
+                params.append("username", username);
+                params.append("password", password);
+                
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: params
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    showAlert(data.message || "اسم المستخدم أو كلمة المرور غير صحيحة", "error");
+                    return;
+                }
+                
+                if (data.status && data.status !== "approved") {
+                    showAlert("الحساب قيد المراجعة من قبل الإدارة", "warning");
+                    return;
+                }
+                
+                showAlert("تم تسجيل الدخول بنجاح", "success");
+                sessionStorage.setItem("currentUser", username);
+                
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1500);
+                
+            } catch (error) {
+                console.error(error);
+                showAlert("خطأ في الاتصال بالخادم", "error");
+            } finally {
+                setLoading("loginBtn", false);
+            }
+        }
+        
+        // Register Handler
+        async function handleRegister(event) {
+            event.preventDefault();
+            hideAlert();
+            
+            const username = document.getElementById("regUsername").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const confirmPassword = document.getElementById("regConfirmPassword").value;
+            
+            if (!username || !email || !password || !confirmPassword) {
+                showAlert("جميع الحقول مطلوبة", "error");
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showAlert("كلمة المرور غير متطابقة", "error");
+                return;
+            }
+            
+            setLoading("registerBtn", true);
+            
+            try {
+                const params = new URLSearchParams();
+                params.append("action", "register");
+                params.append("username", username);
+                params.append("email", email);
+                params.append("password", password);
+                
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: params
+                });
+                
+                showAlert("تم التسجيل بنجاح! في انتظار موافقة الإدارة.", "success");
+                document.getElementById("registerForm").reset();
+                
+                setTimeout(() => {
+                    switchTab("login");
+                }, 3000);
+                
+            } catch (error) {
+                showAlert("خطأ في الاتصال بالخادم", "error");
+            } finally {
+                setLoading("registerBtn", false);
+            }
+        }
+        
+        // Add smooth transitions
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateX(5px)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateX(0)';
+            });
+        });
+    </script>
+</body>
+</html>
