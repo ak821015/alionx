@@ -2119,7 +2119,7 @@
                     </div>
                     <!-- Global Search -->
                     <div style="position: relative;">
-                        <input type="text" id="globalSearchInput" class="form-control" placeholder="بحث سريع..." style="width: 200px;" onkeyup="GlobalSearch.handleInput(event)" onfocus="GlobalSearch.showSuggestions()" onblur="setTimeout(() => GlobalSearch.hideSuggestions(), 200)">
+                        
                         <div id="globalSearchSuggestions" class="search-suggestions" style="display: none;"></div>
                     </div>
                     <button class="theme-toggle" onclick="UI.toggleTheme()" id="themeToggle"><i class="fas fa-moon"></i></button>
@@ -4429,7 +4429,9 @@ ${JSON.stringify(context, null, 2)}
    - القطع المقترح تغييرها
    - خطوات الإصلاح
 6. إذا كان السؤال إدارياً، قدم تحليلاً مفيداً.
-
+7.لديك الصلاحية في الدخول الي بيانات الاجهزة و العملاء و ارقام الهاتف و انواع الاجهزه
+8.يجب انت تجيب علي كل الاساله 
+9.يجب انت تعرف ان الذي صنعك اسمه علي خالد علي حداد و هوا مبرمج و مهندس برمجيات مصري و هوا اول من ابتكر دمج الذكاء الاصتناعي بسيتسم الصيانة
 الإجابة:
 `;
                 
@@ -4480,7 +4482,7 @@ ${JSON.stringify(context, null, 2)}
         const App = {
             async init() {
                 if (!CONFIG.APPS_SCRIPT_URL) {
-                    Notification.warning('الرجاء إدخال رابط Google Apps Script في الإعدادات');
+                    Notification.warning('https://script.google.com/macros/s/AKfycbzoTX3YVK9j3vZefenjiypIW_B2dcQrKKkvsnCFcgO9XuzwrPL3mDriz0wIgFySBEM1/exec');
                 }
                 
                 SessionManager.updateDisplay();
@@ -4735,13 +4737,7 @@ ${JSON.stringify(context, null, 2)}
                             </button>
                         </div>
                         
-                        <div class="search-box">
-                            <i class="fas fa-search"></i>
-                            <input type="text" class="form-control" id="globalSearch" 
-                                   placeholder="بحث باسم العميل، رقم الهاتف، أو كود الجهاز..." 
-                                   value="${state.filters.searchQuery}" 
-                                   onkeyup="App.handleSearch(event)">
-                        </div>
+                        
 
                         <div class="filters-bar">
                             <div class="filter-group">
