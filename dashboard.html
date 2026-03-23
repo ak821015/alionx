@@ -2077,7 +2077,6 @@
                 <li class="nav-item"><a href="#" class="nav-link" onclick="App.showPage('kanban')"><i class="fas fa-columns"></i><span>مراحل الاجهزه </span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" onclick="App.showPage('')"><i class="fas fa-brain"></i><span>التجار</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" onclick="App.showPage('')"><i class="fas fa-brain"></i><span>المحلات</span></a></li>
-                <li class="nav-item"><a href="#" class="nav-link" onclick="App.showPage('ai-config')"><i class="fas fa-brain"></i><span>إعدادات الذكاء الاصطناعي</span></a></li>
             </ul>
             <div style="margin-top: auto; padding-top: 2rem;">
                 <div class="user-menu" onclick="UI.toggleUserMenu()">
@@ -2268,24 +2267,7 @@
             // AI API CONFIGURATION - نظام تدوير المفاتيح المتقدم
             // ============================================
             API_KEYS: {
-                GEMINI: [
-                    { key: 'AIzaSyCoCZFrcIDgXGU7Jc4WWG9yZJnZOxOYVKg', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyCoCZFrcIDgXGU7Jc4WWG9yZJnZOxOYVKg', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyCoCZFrcIDgXGU7Jc4WWG9yZJnZOxOYVKg', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyBO5fkkNay5rwxNmeK77r751wAIwRgTL78', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyAAUR4pHlKL8CjrXYnH3_bN2mcObdhf3DM', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyAWefksl633a2Hl19IGxwTXTXq1h3dvgdE', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyBEU-IP0zSMYpOWYQABlkxApw91Oi-56Vw', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyBOxuynnjfzJMcjheLKfWhd7j1q2YS8_Qg', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyCmDf0aX4THc077amy6Gx59XrNL4S_kqL8', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyDymM69iH5AWH1C5PjGQQu760ZEuj4HNc0', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyAUuqjaP2_k0aGnxOZrfPLUU9da8SzVNw8', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyDAtQgxOlGQ8Tcw4_VGpuqpkdQEWNSRVL8', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyDYjkeopSE-LICFsK5h9fnO5fQwGr29U08', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyBNiQSrjlA-yu7zTUBqoiZw62vDfbYUm-4', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyCoiXXcqHJf-vgleZFMf_Tghu4_Ne_NjuM', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' },
-                    { key: 'AIzaSyBOmoO0Ro7sZ6GqiTFNf2DY-cKsDngShDY', model: 'gemini-2.5-flash', provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent' }
-                ],
+                
                 COHERE: [
                     { key: 'fsiR9GHJgF2PTfHsZYq5zaIqpEeYKokMHW5b0nQH', model: 'command-a-03-2025', provider: 'cohere' },
                     { key: 'yl3hQzbWNou9K3sYQE9geCoksHlA0y3k4P87lzaC', model: 'command-a-03-2025', provider: 'cohere' },
@@ -2301,7 +2283,6 @@
 
         // بناء قائمة ALL_AI_KEYS: Gemini أولاً ثم Cohere
         CONFIG.ALL_AI_KEYS = [
-            ...CONFIG.API_KEYS.GEMINI,
             ...CONFIG.API_KEYS.COHERE
         ];
 
@@ -4842,6 +4823,11 @@ ${JSON.stringify(context, null, 2)}
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             ` : ''}
+                                            ${device.status !== 'delivered' && device.status !== 'rejected' ? `
+                                                <button class="btn btn-danger btn-icon btn-sm" onclick="App.handleRejectDeviceFromCard('${device.id}')" title="رفض الجهاز">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            ` : ''}
                                             ${device.status === 'in_progress' || device.status === 'repairing' ? `
                                                 <button class="btn btn-primary btn-icon btn-sm" onclick="App.showTransferModal('${device.id}')" title="تحويل لفني آخر">
                                                     <i class="fas fa-user-friends"></i>
@@ -4872,6 +4858,15 @@ ${JSON.stringify(context, null, 2)}
                 setTimeout(() => {
                     SmartAlerts.highlightStuckDevices();
                 }, 500);
+            },
+            
+            async handleRejectDeviceFromCard(deviceId) {
+                if (confirm('هل أنت متأكد من رفض هذا الجهاز؟ سيتم تغيير الحالة إلى "مرفوض" ولن يظهر في الأجهزة النشطة.')) {
+                    const success = await DeviceManager.rejectDevice(deviceId);
+                    if (success) {
+                        this.refreshCurrentPage();
+                    }
+                }
             },
             
             renderNewDevicePage() {
