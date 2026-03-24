@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>AK Ultra - تتبع حالة الجهاز</title>
+    
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        /* ============================================ */
+        /* ROOT VARIABLES & THEME - متطابق مع dashboard */
+        /* ============================================ */
+        
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            --background: var(--gray-50);
+            --surface: #ffffff;
+            --surface-hover: var(--gray-100);
+            
+            --text-primary: var(--gray-900);
+            --text-secondary: var(--gray-700);
+            --text-muted: var(--gray-500);
+            
+            --border-light: var(--gray-200);
+            --border-color: var(--gray-300);
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-full: 9999px;
+            
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.375rem;
+            --font-size-2xl: 1.75rem;
+            
+            /* Stage Colors */
+            --stage-received: #94a3b8;
+            --stage-diagnosing: #f59e0b;
+            --stage-repairing: #3b82f6;
+            --stage-testing: #8b5cf6;
+            --stage-ready: #10b981;
+            --stage-delivered: #64748b;
+            --stage-rejected: #ef4444;
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-50) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        
+        /* ============================================ */
+        /* CARD STYLES - متطابقة مع dashboard */
+        /* ============================================ */
+        .device-view-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--surface);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+        
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+        }
+        
+        .logo-text h1 {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .logo-text p {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+        }
+        
+        .device-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+            transition: transform var(--transition-fast);
+        }
+        
+        .device-card-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 1.5rem;
+            color: white;
+            text-align: center;
+        }
+        
+        .device-card-header h2 {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .repair-code {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+            background: rgba(255,255,255,0.2);
+            display: inline-block;
+            padding: 0.25rem 1rem;
+            border-radius: var(--radius-full);
+            margin-top: 0.5rem;
+        }
+        
+        .device-card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Workflow Progress - مطابق */
+        .workflow-progress {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 1.5rem 0;
+            padding: 0.5rem 0;
+            background: var(--surface-hover);
+            border-radius: var(--radius-lg);
+            flex-wrap: wrap;
+        }
+        
+        .workflow-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+        
+        .workflow-stage.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .workflow-stage.completed {
+            color: var(--success);
+        }
+        
+        .workflow-stage.rejected-stage {
+            color: var(--danger);
+        }
+        
+        .workflow-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border-light);
+            transition: all var(--transition-fast);
+        }
+        
+        .workflow-stage.active .workflow-dot {
+            background: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        .workflow-stage.completed .workflow-dot {
+            background: var(--success);
+        }
+        
+        .workflow-stage.rejected-stage .workflow-dot {
+            background: var(--danger);
+        }
+        
+        /* Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .info-item {
+            background: var(--surface-hover);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+        }
+        
+        .info-label {
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .info-value {
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-xs);
+            font-weight: 500;
+        }
+        
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .badge-info { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+        .badge-primary { background: rgba(37, 99, 235, 0.1); color: var(--primary); }
+        .badge-secondary { background: rgba(100, 116, 139, 0.1); color: var(--text-secondary); }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            font-size: var(--font-size-sm);
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border-light);
+            color: var(--text-primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary);
+        }
+        
+        /* QR Section */
+        .qr-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-hover);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            margin-top: 1.5rem;
+            border: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .qr-placeholder {
+            background: white;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-placeholder canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Loading & Error */
+        .loading-overlay-local {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-card {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border-light);
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-progress {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .workflow-stage {
+                width: 100%;
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 0.75rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .qr-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            body {
+                padding: 1rem;
+            }
+        }
+        
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: var(--font-size-xs);
+            color: var(--text-muted);
+        }
+        
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .device-card {
+            animation: fadeInUp 0.4s ease;
+        }
+        
+        /* Timeline styling if needed */
+        .timeline-mini {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+        }
+        .timeline-mini-item {
+            font-size: var(--font-size-xs);
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed var(--border-light);
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="device-view-container">
+    <div class="brand-header">
+        <div class="brand-logo">
+            <div class="logo-icon"><i class="fas fa-tools"></i></div>
+            <div class="logo-text">
+                <h1>AK Ultra</h1>
+                <p>مركز تورنيدو للصيانة</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="deviceContent">
+        <!-- Loading State -->
+        <div class="device-card" id="loadingState">
+            <div class="device-card-body loading-overlay-local">
+                <div class="loading-spinner"></div>
+                <p>جاري تحميل بيانات الجهاز...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-note">
+        <i class="fas fa-qrcode"></i> هذه الصفحة مخصصة لتتبع حالة جهازك | نظام إدارة الصيانة الذكي
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // CONFIGURATION - مطابق تمامًا مع dashboard
+    // ============================================
+    const CONFIG = {
+        APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzoTX3YVK9j3vZefenjiypIW_B2dcQrKKkvsnCFcgO9XuzwrPL3mDriz0wIgFySBEM1/exec',
+        API_TIMEOUT: 15000,
+        API_RETRIES: 2,
+        WORKFLOW_STAGES: ['received', 'diagnosing', 'repairing', 'testing', 'ready', 'delivered'],
+        TECHNICIANS: ['مهندس حسام', 'حسن محمد', 'زياد خالد', 'رضا بودي', 'يوسف محمد', 'علي خالد']
+    };
+    
+    // ============================================
+    // API CLIENT - نسخة مبسطة للقراءة فقط
+    // ============================================
+    const ApiClient = {
+        async call(action, payload = {}, options = {}) {
+            if (!CONFIG.APPS_SCRIPT_URL) {
+                throw new Error('APPS_SCRIPT_URL غير مهيأ');
+            }
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
+            
+            try {
+                const formData = new FormData();
+                formData.append('action', action);
+                formData.append('payload', JSON.stringify(payload));
+                
+                const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data;
+                
+            } catch (error) {
+                clearTimeout(timeoutId);
+                console.error('API Error:', error);
+                throw error;
+            }
+        },
+        
+        async getDeviceById(deviceId) {
+            try {
+                const result = await this.call('GET_DEVICE_BY_ID', { id: deviceId });
+                if (result.success && result.device) {
+                    return result.device;
+                }
+                throw new Error(result.error || 'الجهاز غير موجود');
+            } catch (error) {
+                console.error('Failed to fetch device:', error);
+                throw error;
+            }
+        }
+    };
+    
+    // ============================================
+    // UI HELPER - متطابق مع dashboard
+    // ============================================
+    const UIHelpers = {
+        formatDate(dateString) {
+            if (!dateString) return 'غير محدد';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        },
+        
+        getStatusText(status) {
+            const statusMap = {
+                'received': 'مستلم',
+                'diagnosing': 'جاري الفحص',
+                'repairing': 'جاري الإصلاح',
+                'testing': 'جاري الاختبار',
+                'ready': 'جاهز للتسليم',
+                'in_progress': 'قيد الصيانة',
+                'delivered': 'تم التسليم',
+                'rejected': 'مرفوض',
+                'waiting_parts': 'بإنتظار قطع',
+                'beyond_repair': 'لا يصلح'
+            };
+            return statusMap[status] || status;
+        },
+        
+        getStatusBadgeClass(status) {
+            const classMap = {
+                'received': 'info',
+                'diagnosing': 'warning',
+                'repairing': 'primary',
+                'testing': 'info',
+                'ready': 'success',
+                'in_progress': 'warning',
+                'delivered': 'success',
+                'rejected': 'danger',
+                'waiting_parts': 'primary',
+                'beyond_repair': 'danger'
+            };
+            return classMap[status] || 'secondary';
+        },
+        
+        renderWorkflowProgress(device) {
+            const stages = CONFIG.WORKFLOW_STAGES;
+            let currentStatus = device.status || 'received';
+            
+            // إذا كان مرفوض نعرض مسار مختلف
+            if (currentStatus === 'rejected') {
+                return `
+                    <div class="workflow-progress">
+                        <div class="workflow-stage rejected-stage active" style="flex:1;">
+                            <div class="workflow-dot" style="background: var(--danger);"></div>
+                            <span>⚠️ الجهاز مرفوض</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            let currentIndex = stages.indexOf(currentStatus);
+            if (currentIndex === -1) currentIndex = 0;
+            
+            const displayStages = stages.filter(s => s !== 'delivered' || currentStatus === 'delivered');
+            const finalStages = displayStages;
+            
+            return `
+                <div class="workflow-progress">
+                    ${finalStages.map((stage, idx) => {
+                        let stageIndex = stages.indexOf(stage);
+                        let isCompleted = stageIndex < currentIndex;
+                        let isActive = stageIndex === currentIndex;
+                        return `
+                            <div class="workflow-stage ${stage} ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}">
+                                <div class="workflow-dot"></div>
+                                <span>${this.getStatusText(stage)}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+    };
+    
+    // ============================================
+    // PAGE RENDERER
+    // ============================================
+    const DeviceViewRenderer = {
+        showLoading() {
+            const container = document.getElementById('deviceContent');
+            container.innerHTML = `
+                <div class="device-card">
+                    <div class="device-card-body loading-overlay-local">
+                        <div class="loading-spinner"></div>
+                        <p>جاري تحميل بيانات الجهاز...</p>
+                    </div>
+                </div>
+            `;
+        },
+        
+        showError(message) {
+            const container = document.getElementById('deviceContent');
+            container.innerHTML = `
+                <div class="error-card">
+                    <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3>عذراً</h3>
+                    <p class="text-muted">${message}</p>
+                    <button class="btn btn-primary mt-3" onclick="window.location.reload()">
+                        <i class="fas fa-redo-alt"></i> إعادة المحاولة
+                    </button>
+                    <div class="mt-3">
+                        <a href="dashboard.html" class="btn btn-outline">العودة للرئيسية</a>
+                    </div>
+                </div>
+            `;
+        },
+        
+        renderDevice(device) {
+            const container = document.getElementById('deviceContent');
+            const isRejected = device.status === 'rejected';
+            const isDelivered = device.status === 'delivered';
+            
+            // إضافة رابط اتصال بالعميل
+            const phoneLink = device.customer_phone ? `tel:${device.customer_phone}` : '#';
+            
+            const html = `
+                <div class="device-card">
+                    <div class="device-card-header">
+                        <h2>${this.escapeHtml(device.customer_name) || 'عميل كريم'}</h2>
+                        <div class="repair-code">
+                            <i class="fas fa-barcode"></i> كود الصيانة: ${device.repair_number || device.device_code || 'غير محدد'}
+                        </div>
+                    </div>
+                    
+                    <div class="device-card-body">
+                        ${UIHelpers.renderWorkflowProgress(device)}
+                        
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-mobile-alt"></i> نوع الجهاز</div>
+                                <div class="info-value">${this.escapeHtml(device.device_name) || 'غير محدد'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-phone-alt"></i> رقم الهاتف</div>
+                                <div class="info-value">
+                                    ${device.customer_phone ? 
+                                        `<a href="${phoneLink}" style="color: var(--primary); text-decoration: none;">${device.customer_phone}</a>` : 
+                                        'غير محدد'}
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-user-cog"></i> الفني المسؤول</div>
+                                <div class="info-value">${device.opened_by || 'لم يتم تعيين بعد'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-calendar-alt"></i> تاريخ الاستلام</div>
+                                <div class="info-value">${UIHelpers.formatDate(device.date_created)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-clock"></i> آخر تحديث</div>
+                                <div class="info-value">${UIHelpers.formatDate(device.last_update || device.date_created)}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-tag"></i> الحالة</div>
+                                <div class="info-value">
+                                    <span class="badge badge-${UIHelpers.getStatusBadgeClass(device.status)}">
+                                        ${UIHelpers.getStatusText(device.status)}
+                                    </span>
+                                </div>
+                            </div>
+                            ${device.price ? `
+                            <div class="info-item">
+                                <div class="info-label"><i class="fas fa-coins"></i> قيمة الصيانة</div>
+                                <div class="info-value">${device.price} جنيه</div>
+                            </div>
+                            ` : ''}
+                            <div class="info-item" style="grid-column: span 2;">
+                                <div class="info-label"><i class="fas fa-exclamation-triangle"></i> المشكلة المبدئية</div>
+                                <div class="info-value">${this.escapeHtml(device.problem) || 'غير مسجلة'}</div>
+                            </div>
+                            ${device.problem_solved ? `
+                            <div class="info-item" style="grid-column: span 2;">
+                                <div class="info-label"><i class="fas fa-check-circle"></i> الحل / الإجراء</div>
+                                <div class="info-value">${this.escapeHtml(device.problem_solved)}</div>
+                            </div>
+                            ` : ''}
+                            ${device.notes ? `
+                            <div class="info-item" style="grid-column: span 2;">
+                                <div class="info-label"><i class="fas fa-sticky-note"></i> ملاحظات إضافية</div>
+                                <div class="info-value">${this.escapeHtml(device.notes)}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <a href="${phoneLink}" class="btn btn-primary ${!device.customer_phone ? 'disabled' : ''}" style="pointer-events: ${device.customer_phone ? 'auto' : 'none'}; opacity: ${device.customer_phone ? '1' : '0.6'};">
+                                <i class="fas fa-phone-alt"></i> اتصل بالعميل
+                            </a>
+                            <button class="btn btn-outline" onclick="window.location.reload()">
+                                <i class="fas fa-sync-alt"></i> تحديث الحالة
+                            </button>
+                        </div>
+                        
+                        <div class="qr-section" id="qrSection">
+                            <div class="qr-placeholder" id="qrDeviceView"></div>
+                            <div class="text-small">
+                                <i class="fas fa-qrcode"></i> رمز QR لهذه الصفحة<br>
+                                يمكنك مسحه لمشاركة حالة جهازك بسهولة
+                            </div>
+                        </div>
+                        
+                        ${!isDelivered && !isRejected ? `
+                        <div class="timeline-mini">
+                            <div class="info-label"><i class="fas fa-history"></i> آخر تحديث للحالة</div>
+                            <div class="timeline-mini-item">
+                                <i class="fas fa-chevron-left" style="color: var(--primary);"></i>
+                                <span>جهازك قيد المعالجة، سيتم إشعارك عند اكتمال الصيانة</span>
+                            </div>
+                        </div>
+                        ` : (isDelivered ? `
+                        <div class="timeline-mini" style="background: rgba(16, 185, 129, 0.1); padding: 0.75rem; border-radius: var(--radius-lg); margin-top: 1rem;">
+                            <div class="info-label text-success"><i class="fas fa-check-circle"></i> تم تسليم الجهاز</div>
+                            <div class="text-small">نشكرك على ثقتك، في حالة وجود أي استفسار يرجى التواصل مع المركز</div>
+                        </div>
+                        ` : (isRejected ? `
+                        <div class="timeline-mini" style="background: rgba(239, 68, 68, 0.1); padding: 0.75rem; border-radius: var(--radius-lg); margin-top: 1rem;">
+                            <div class="info-label text-danger"><i class="fas fa-ban"></i> الجهاز مرفوض</div>
+                            <div class="text-small">للأسف لا يمكن إصلاح الجهاز، يرجى التواصل مع المركز لاستلام الجهاز</div>
+                        </div>
+                        ` : ''))}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // إنشاء QR Code لهذه الصفحة الحالية (الجهاز نفسه)
+            setTimeout(() => {
+                const qrContainer = document.getElementById('qrDeviceView');
+                if (qrContainer && window.QRCode) {
+                    const currentUrl = window.location.href;
+                    new QRCode(qrContainer, {
+                        text: currentUrl,
+                        width: 80,
+                        height: 80,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                }
+            }, 100);
+        },
+        
+        escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+    };
+    
+    // ============================================
+    // MAIN LOGIC - استخراج ID من URL
+    // ============================================
+    async function initDeviceView() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const deviceId = urlParams.get('id');
+        
+        if (!deviceId || deviceId.trim() === '') {
+            DeviceViewRenderer.showError('لم يتم العثور على معرف الجهاز. الرابط غير صالح.');
+            return;
+        }
+        
+        DeviceViewRenderer.showLoading();
+        
+        try {
+            const device = await ApiClient.getDeviceById(deviceId);
+            if (!device) {
+                throw new Error('الجهاز غير موجود');
+            }
+            DeviceViewRenderer.renderDevice(device);
+        } catch (error) {
+            console.error('Error loading device:', error);
+            let errorMsg = 'حدث خطأ أثناء تحميل بيانات الجهاز.';
+            if (error.message.includes('غير موجود')) {
+                errorMsg = 'الجهاز غير موجود في قاعدة البيانات.';
+            } else if (error.message.includes('Network')) {
+                errorMsg = 'فشل الاتصال بالخادم. تحقق من اتصالك بالإنترنت.';
+            } else {
+                errorMsg = error.message || 'حدث خطأ غير متوقع.';
+            }
+            DeviceViewRenderer.showError(errorMsg);
+        }
+    }
+    
+    // بدء التشغيل
+    document.addEventListener('DOMContentLoaded', initDeviceView);
+</script>
+</body>
+</html>
