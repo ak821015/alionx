@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
         /* ============================================ */
         /* ROOT VARIABLES & THEME - محسن */
@@ -1951,6 +1954,45 @@
         .gap-1 { gap: 0.25rem; }
         .gap-2 { gap: 0.5rem; }
         .gap-3 { gap: 0.75rem; }
+
+        /* QR Code Styles */
+        .qr-code-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-hover);
+            padding: 0.5rem;
+            border-radius: var(--radius-lg);
+            margin: 0.5rem 0;
+            border: 1px solid var(--border-light);
+        }
+        .qr-code-placeholder {
+            background: white;
+            padding: 0.25rem;
+            border-radius: var(--radius-md);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-code-placeholder canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .qr-code-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .qr-view-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            cursor: pointer;
+        }
         
         /* ============================================ */
         /* RESPONSIVE */
@@ -2246,6 +2288,20 @@
                 <button class="modal-close" onclick="UI.closeModal('alertsModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body" id="alertsModalBody"></div>
+        </div>
+    </div>
+
+    <!-- New Modal for QR Code View -->
+    <div class="modal" id="qrViewModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">رمز QR للجهاز</h3>
+                <button class="modal-close" onclick="UI.closeModal('qrViewModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="text-align: center;" id="qrViewModalBody">
+                <div id="qrDisplayContainer"></div>
+                <p class="mt-3 text-small">امسح الرمض لعرض بيانات الجهاز</p>
+            </div>
         </div>
     </div>
     
@@ -4477,6 +4533,52 @@ ${JSON.stringify(context, null, 2)}
         };
 
         // ============================================
+        // QR CODE GENERATION FUNCTIONS
+        // ============================================
+        function generateQRCodeForCard(deviceId) {
+            const containerId = `qr-code-${deviceId}`;
+            setTimeout(() => {
+                const container = document.getElementById(containerId);
+                if (container && window.QRCode) {
+                    const qrUrl = `device-view.html?id=${deviceId}`;
+                    new QRCode(container, {
+                        text: qrUrl,
+                        width: 50,
+                        height: 50,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.M
+                    });
+                }
+            }, 100); // slight delay to ensure DOM is ready
+        }
+
+        function showQRInModal(deviceId) {
+            const device = StateManager.state.devices.find(d => d.id === deviceId);
+            if (!device) return;
+            
+            const qrUrl = `device-view.html?id=${deviceId}`;
+            const modalBody = document.getElementById('qrViewModalBody');
+            modalBody.innerHTML = `<div id="qr-large-container" style="display: flex; justify-content: center; margin: 1rem 0;"></div><p class="mt-3 text-small">امسح الرمض لعرض بيانات الجهاز: <strong>${device.customer_name} - ${device.device_name}</strong></p>`;
+            
+            UI.openModal('qrViewModal');
+            
+            setTimeout(() => {
+                const qrContainer = document.getElementById('qr-large-container');
+                if (qrContainer && window.QRCode) {
+                    new QRCode(qrContainer, {
+                        text: qrUrl,
+                        width: 250,
+                        height: 250,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                }
+            }, 100);
+        }
+
+        // ============================================
         // APP - التطبيق الرئيسي
         // ============================================
         const App = {
@@ -4682,6 +4784,12 @@ ${JSON.stringify(context, null, 2)}
                                     </div>
                                     ${WorkflowManager.renderWorkflowProgress(device)}
                                     <p class="text-small"><i class="fas fa-exclamation-circle"></i> ${device.problem.substring(0, 50)}${device.problem.length > 50 ? '...' : ''}</p>
+                                    <div class="qr-code-container">
+                                        <div id="qr-code-${device.id}" class="qr-code-placeholder"></div>
+                                        <div class="qr-code-actions">
+                                            <button class="qr-view-btn" onclick="event.stopPropagation(); showQRInModal('${device.id}')"><i class="fas fa-qrcode"></i> عرض QR</button>
+                                        </div>
+                                    </div>
                                 </div>
                             `).join('') : '<p class="text-small">لا توجد أجهزة جديدة اليوم</p>'}
                         </div>
@@ -4711,6 +4819,9 @@ ${JSON.stringify(context, null, 2)}
                 `;
                 
                 document.getElementById('pageContainer').innerHTML = html;
+                
+                // Generate QR codes for devices in the slider
+                todayDevices.slice(0, 5).forEach(device => generateQRCodeForCard(device.id));
                 
                 // Highlight stuck devices
                 setTimeout(() => {
@@ -4808,6 +4919,13 @@ ${JSON.stringify(context, null, 2)}
                                     <p class="text-small"><i class="fas fa-exclamation-circle"></i> ${device.problem.substring(0, 50)}${device.problem.length > 50 ? '...' : ''}</p>
                                     ${device.price ? `<p class="text-small"><i class="fas fa-coins"></i> ${device.price} جنيه</p>` : ''}
                                     
+                                    <div class="qr-code-container">
+                                        <div id="qr-code-${device.id}" class="qr-code-placeholder"></div>
+                                        <div class="qr-code-actions">
+                                            <button class="qr-view-btn" onclick="event.stopPropagation(); showQRInModal('${device.id}')"><i class="fas fa-qrcode"></i> عرض QR</button>
+                                        </div>
+                                    </div>
+
                                     <div class="device-meta">
                                         <span>${UI.formatDate(device.date_created)}</span>
                                         <div class="d-flex gap-1" onclick="event.stopPropagation()">
@@ -4849,6 +4967,9 @@ ${JSON.stringify(context, null, 2)}
                 `;
                 
                 document.getElementById('pageContainer').innerHTML = html;
+                
+                // Generate QR codes for all devices in this page
+                devices.forEach(device => generateQRCodeForCard(device.id));
                 
                 // Highlight stuck devices
                 setTimeout(() => {
@@ -5383,11 +5504,34 @@ ${JSON.stringify(context, null, 2)}
                                 </button>
                             </div>
                         ` : ''}
+                        
+                        <div class="qr-code-container mt-3">
+                            <div id="qr-code-large-${device.id}" class="qr-code-placeholder" style="width: 70px; height: 70px;"></div>
+                            <div class="qr-code-actions">
+                                <button class="qr-view-btn" onclick="event.stopPropagation(); showQRInModal('${device.id}')"><i class="fas fa-expand"></i> عرض QR بحجم أكبر</button>
+                            </div>
+                        </div>
                     </div>
                 `;
                 
                 modalBody.innerHTML = html;
                 UI.openModal('enlargedDeviceModal');
+                
+                // Generate QR for this modal view
+                setTimeout(() => {
+                    const qrContainer = document.getElementById(`qr-code-large-${device.id}`);
+                    if (qrContainer && window.QRCode) {
+                        const qrUrl = `${window.location.origin}/device-view.html?id=${device.id}`;
+                        new QRCode(qrContainer, {
+                            text: qrUrl,
+                            width: 70,
+                            height: 70,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.M
+                        });
+                    }
+                }, 100);
             },
             
             async handleStartMaintenance(deviceId) {
