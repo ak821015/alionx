@@ -2248,6 +2248,18 @@
             <div class="modal-body" id="alertsModalBody"></div>
         </div>
     </div>
+
+    <!-- ADDED QR FEATURE: QR Modal -->
+    <div id="qrModal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);">
+        <div style="background:#fff; padding:20px; margin:10% auto; width:300px; text-align:center; border-radius:10px;">
+            <h3>QR Code</h3>
+            <canvas id="qrCanvas"></canvas>
+            <input id="qrLink" readonly style="width:100%; margin-top:10px;">
+            <button onclick="App.copyQRLink()">نسخ الرابط</button>
+            <button onclick="App.openQRLink()">فتح الرابط</button>
+            <button onclick="App.closeQRModal()">إغلاق</button>
+        </div>
+    </div>
     
     <script>
         // ============================================
@@ -4682,6 +4694,43 @@ ${JSON.stringify(context, null, 2)}
                                     </div>
                                     ${WorkflowManager.renderWorkflowProgress(device)}
                                     <p class="text-small"><i class="fas fa-exclamation-circle"></i> ${device.problem.substring(0, 50)}${device.problem.length > 50 ? '...' : ''}</p>
+                                    <div class="device-meta">
+                                        <span>${UI.formatDate(device.date_created)}</span>
+                                        <div class="d-flex gap-1" onclick="event.stopPropagation()">
+                                            <button class="btn btn-secondary btn-icon btn-sm" onclick="App.editDevice('${device.id}')" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            ${device.status !== 'delivered' && device.status !== 'rejected' ? `
+                                                <button class="btn btn-success btn-icon btn-sm" onclick="App.showDeliverModal('${device.id}')" title="تسليم">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            ` : ''}
+                                            ${device.status !== 'delivered' && device.status !== 'rejected' ? `
+                                                <button class="btn btn-danger btn-icon btn-sm" onclick="App.handleRejectDeviceFromCard('${device.id}')" title="رفض الجهاز">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            ` : ''}
+                                            ${device.status === 'in_progress' || device.status === 'repairing' ? `
+                                                <button class="btn btn-primary btn-icon btn-sm" onclick="App.showTransferModal('${device.id}')" title="تحويل لفني آخر">
+                                                    <i class="fas fa-user-friends"></i>
+                                                </button>
+                                            ` : ''}
+                                            <button class="btn btn-warning btn-icon btn-sm" onclick="App.showSolutionModal('${device.id}')" title="تسجيل حل">
+                                                <i class="fas fa-wrench"></i>
+                                            </button>
+                                            <button class="btn btn-info btn-icon btn-sm" onclick="App.showTimelineModal('${device.id}')" title="سجل الصيانة">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                            <button class="btn btn-primary btn-icon btn-sm" onclick="App.openDevicePage('${device.id}')" title="عرض الجهاز">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <!-- ADDED QR FEATURE -->
+                                            <button class="btn btn-dark btn-icon btn-sm"
+                                                onclick="App.showQRModal('${device.id}')"
+                                                title="QR Code"> <i class="fas fa-qrcode"></i> </button>
+                                        </div>
+                                    </div>
+                                    ${WorkflowManager.renderWorkflowControls(device)}
                                 </div>
                             `).join('') : '<p class="text-small">لا توجد أجهزة جديدة اليوم</p>'}
                         </div>
@@ -4838,6 +4887,10 @@ ${JSON.stringify(context, null, 2)}
                                             <button class="btn btn-primary btn-icon btn-sm" onclick="App.openDevicePage('${device.id}')" title="عرض الجهاز">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                            <!-- ADDED QR FEATURE -->
+                                            <button class="btn btn-dark btn-icon btn-sm"
+                                                onclick="App.showQRModal('${device.id}')"
+                                                title="QR Code"> <i class="fas fa-qrcode"></i> </button>
                                         </div>
                                     </div>
                                     ${WorkflowManager.renderWorkflowControls(device)}
@@ -5993,6 +6046,34 @@ ${JSON.stringify(context, null, 2)}
             // دالة جديدة لفتح صفحة الجهاز
             openDevicePage(deviceId) {
                 window.location.href = `device.html?id=${deviceId}`;
+            },
+
+            // ADDED QR FEATURE: New functions
+            showQRModal(deviceId) {
+                const base = "https://ak821015.github.io/alionx/device.html?id=";
+                const url = base + deviceId;
+
+                CURRENT_QR_LINK = url;
+
+                const canvas = document.getElementById("qrCanvas");
+                if (canvas) {
+                    QRCode.toCanvas(canvas, url, { width: 200 });
+                }
+
+                document.getElementById("qrLink").value = url;
+                document.getElementById("qrModal").style.display = "block";
+            },
+
+            copyQRLink() {
+                navigator.clipboard.writeText(CURRENT_QR_LINK);
+            },
+
+            openQRLink() {
+                window.open(CURRENT_QR_LINK, "_blank");
+            },
+
+            closeQRModal() {
+                document.getElementById("qrModal").style.display = "none";
             }
         };
 
@@ -6011,6 +6092,12 @@ ${JSON.stringify(context, null, 2)}
         document.addEventListener('DOMContentLoaded', () => {
             App.init();
         });
+
+        // ADDED QR FEATURE: Global variable
+        let CURRENT_QR_LINK = "";
     </script>
+
+    <!-- QR LIBRARY - ADDED -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </body>
 </html>
