@@ -806,7 +806,7 @@
             <div class="logo-icon"><i class="fas fa-boxes"></i></div>
             <div class="logo-text">
                 <h1>نظام إدارة المخزون</h1>
-                <p>قطع الغيار والأجهزة - مركز تورنيدو</p>
+                <p>قطع الغيار والأجهزة - إحترافي متكامل</p>
             </div>
         </div>
         <div class="header-actions">
@@ -1050,30 +1050,6 @@
     </div>
 </div>
 
-<div class="modal" id="itemDetailsModal">
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 class="modal-title">تفاصيل القطعة</h3>
-            <button class="modal-close" onclick="closeModal('itemDetailsModal')"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body" id="itemDetailsBody"></div>
-    </div>
-</div>
-
-<div class="modal" id="sellItemModal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3 class="modal-title">بيع قطعة</h3>
-            <button class="modal-close" onclick="closeModal('sellItemModal')"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body" id="sellItemBody"></div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('sellItemModal')">إلغاء</button>
-            <button class="btn btn-success" id="confirmSellBtn" onclick="confirmSell()">تأكيد البيع</button>
-        </div>
-    </div>
-</div>
-
 <script>
     const CONFIG = {
         APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzocFxKu7A3DhfRPXwvvDTqIt2R0vdhGkoulO1JKZpS-RSNWNl6YCrDcckqMqvJZslC/exec'
@@ -1086,7 +1062,6 @@
     let currentSearchQuery = '';
     let currentCategoryFilter = 'all';
     let currentSupplierFilter = 'all';
-    let currentSellItemId = null;
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
@@ -1303,7 +1278,7 @@
         if (filteredItems.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>لا توجد قطع غيار</p></div>'; return; }
         container.innerHTML = filteredItems.map(item => {
             const linkedDevices = devicePartsLinks.filter(link => link.ItemID === item.ID).map(link => devices.find(d => d.ID === link.DeviceID)).filter(d => d);
-            return `<div class="item-card" onclick="showItemDetails('${item.ID}')"><div class="card-header"><h4 class="card-title">${escapeHtml(item.Name)}</h4><div><span class="card-badge badge-category">${escapeHtml(item.Category || 'غير محدد')}</span></div></div><div class="card-details"><div class="detail-row"><span class="detail-label">النوع</span><span class="detail-value">${escapeHtml(item.Type || 'غير محدد')}</span></div><div class="detail-row"><span class="detail-label">سعر الشراء</span><span class="detail-value">${parseFloat(item.CostPrice || 0).toFixed(2)} جنيه</span></div><div class="detail-row"><span class="detail-label">الحالة</span><span class="detail-value ${item.Status === 'active' ? 'text-success' : 'text-danger'}">${item.Status === 'active' ? 'متوفر' : 'غير متوفر'}</span></div></div><div class="supplier-info"><i class="fas fa-truck"></i> ${escapeHtml(item.SupplierName || 'غير محدد')} | ${escapeHtml(item.SupplierPhone || '')}</div>${linkedDevices.length > 0 ? `<div class="related-items"><span class="detail-label">مرتبط بـ:</span>${linkedDevices.map(device => `<span class="related-tag"><i class="fas fa-mobile-alt"></i> ${escapeHtml(device.Name)}</span>`).join('')}</div>` : ''}<div class="card-actions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-icon btn-sm" onclick="editItem('${item.ID}')" title="تعديل"><i class="fas fa-edit"></i></button><button class="btn btn-success btn-icon btn-sm" onclick="openSellModal('${item.ID}')" title="بيع"><i class="fas fa-dollar-sign"></i> بيع</button></div></div>`;
+            return `<div class="item-card"><div class="card-header"><h4 class="card-title">${escapeHtml(item.Name)}</h4><div><span class="card-badge badge-category">${escapeHtml(item.Category || 'غير محدد')}</span></div></div><div class="card-details"><div class="detail-row"><span class="detail-label">النوع</span><span class="detail-value">${escapeHtml(item.Type || 'غير محدد')}</span></div><div class="detail-row"><span class="detail-label">سعر الشراء</span><span class="detail-value">${parseFloat(item.CostPrice || 0).toFixed(2)} جنيه</span></div><div class="detail-row"><span class="detail-label">الحالة</span><span class="detail-value ${item.Status === 'active' ? 'text-success' : 'text-danger'}">${item.Status === 'active' ? 'متوفر' : 'غير متوفر'}</span></div></div><div class="supplier-info"><i class="fas fa-truck"></i> ${escapeHtml(item.SupplierName || 'غير محدد')} | ${escapeHtml(item.SupplierPhone || '')}</div>${linkedDevices.length > 0 ? `<div class="related-items"><span class="detail-label">مرتبط بـ:</span>${linkedDevices.map(device => `<span class="related-tag"><i class="fas fa-mobile-alt"></i> ${escapeHtml(device.Name)}</span>`).join('')}</div>` : ''}<div class="card-actions"><button class="btn btn-secondary btn-icon btn-sm" onclick="editItem('${item.ID}')" title="تعديل"><i class="fas fa-edit"></i></button></div></div>`;
         }).join('');
     }
 
@@ -1385,132 +1360,8 @@
         if (!device) return;
         const linkedParts = devicePartsLinks.filter(link => link.DeviceID === device.ID).map(link => stockItems.find(item => item.ID === link.ItemID)).filter(item => item);
         const modalBody = document.getElementById('deviceDetailsBody');
-        modalBody.innerHTML = `<div class="device-details-card">
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-light), var(--primary)); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-mobile-alt"></i></div>
-                <div><h3 style="font-size: var(--font-size-xl);">${escapeHtml(device.Name)}</h3><p class="text-small" style="color: var(--text-muted);">${escapeHtml(device.Model)}</p></div>
-            </div>
-            <h4 style="margin-bottom: 1rem;">قطع الغيار المرتبطة</h4>
-            <div id="devicePartsContainer">${linkedParts.length === 0 ? '<p class="text-small">لا توجد قطع غيار مرتبطة بهذا الجهاز</p>' : linkedParts.map(part => `
-                <div class="device-part-card" id="partCard_${part.ID}">
-                    <div class="device-part-name">${escapeHtml(part.Name)}</div>
-                    <div class="part-extra-details" id="partExtra_${part.ID}" style="display: none; margin-top: 0.5rem;">
-                        <div class="detail-row"><span class="detail-label">القسم</span><span>${escapeHtml(part.Category)}</span></div>
-                        <div class="detail-row"><span class="detail-label">النوع</span><span>${escapeHtml(part.Type)}</span></div>
-                        <div class="detail-row"><span class="detail-label">سعر الشراء</span><span>${parseFloat(part.CostPrice || 0).toFixed(2)} جنيه</span></div>
-                        <div class="supplier-info" style="margin-top: 0.5rem;"><i class="fas fa-truck"></i> ${escapeHtml(part.SupplierName)} | ${escapeHtml(part.SupplierPhone)}</div>
-                    </div>
-                    <button class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;" onclick="togglePartDetails('${part.ID}')">عرض تفاصيل القطع</button>
-                </div>
-            `).join('')}</div>
-        </div>`;
+        modalBody.innerHTML = `<div class="device-details-card"><div class="device-details-header" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;"><div class="device-details-icon" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-light), var(--primary)); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;"><i class="fas fa-mobile-alt"></i></div><div><h3 style="font-size: var(--font-size-xl);">${escapeHtml(device.Name)}</h3><p class="text-small" style="color: var(--text-muted);">${escapeHtml(device.Model)}</p></div></div><div class="device-details-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;"><div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);"><div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">نوع الجهاز</div><div class="device-detail-value" style="font-weight: 600;">${escapeHtml(device.Type || 'غير محدد')}</div></div><div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);"><div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">الموديل</div><div class="device-detail-value" style="font-weight: 600;">${escapeHtml(device.Model || 'غير محدد')}</div></div><div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);"><div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">سعر الشراء</div><div class="device-detail-value" style="font-weight: 600;">${parseFloat(device.CostPrice || 0).toFixed(2)} جنيه</div></div><div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);"><div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">المورد</div><div class="device-detail-value" style="font-weight: 600;">${escapeHtml(device.SupplierName)}<br><small>${escapeHtml(device.SupplierPhone)}</small></div></div></div><h4 style="margin-bottom: 1rem;">قطع الغيار المرتبطة</h4><div class="device-parts-list">${linkedParts.length === 0 ? '<p class="text-small">لا توجد قطع غيار مرتبطة بهذا الجهاز</p>' : linkedParts.map(part => `<div class="device-part-card"><div class="device-part-name">${escapeHtml(part.Name)}</div><div class="detail-row" style="margin-top: 0.5rem;"><span class="detail-label">القسم</span><span>${escapeHtml(part.Category)}</span></div><div class="detail-row"><span class="detail-label">النوع</span><span>${escapeHtml(part.Type)}</span></div><div class="detail-row"><span class="detail-label">السعر</span><span>${parseFloat(part.CostPrice || 0).toFixed(2)} جنيه</span></div><div class="supplier-info" style="margin-top: 0.5rem;"><i class="fas fa-truck"></i> ${escapeHtml(part.SupplierName)} | ${escapeHtml(part.SupplierPhone)}</div></div>`).join('')}</div></div>`;
         openModal('deviceDetailsModal');
-    }
-
-    function togglePartDetails(partId) {
-        const detailsDiv = document.getElementById(`partExtra_${partId}`);
-        if (detailsDiv) {
-            const isVisible = detailsDiv.style.display === 'block';
-            detailsDiv.style.display = isVisible ? 'none' : 'block';
-            const btn = document.querySelector(`#partCard_${partId} button`);
-            if (btn) btn.textContent = isVisible ? 'عرض تفاصيل القطع' : 'إخفاء التفاصيل';
-        }
-    }
-
-    function showItemDetails(itemId) {
-        const item = stockItems.find(i => i.ID === itemId);
-        if (!item) return;
-        renderItemDetailsModal(item);
-    }
-
-    function renderItemDetailsModal(item) {
-        const linkedDevices = devicePartsLinks.filter(link => link.ItemID === item.ID).map(link => devices.find(d => d.ID === link.DeviceID)).filter(d => d);
-        const modalBody = document.getElementById('itemDetailsBody');
-        modalBody.innerHTML = `
-            <div class="device-details-card">
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: var(--font-size-xl);">${escapeHtml(item.Name)}</h3>
-                </div>
-                <div class="device-details-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                    <div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);">
-                        <div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">النوع</div>
-                        <div class="device-detail-value" style="font-weight: 600;">${escapeHtml(item.Type || 'غير محدد')}</div>
-                    </div>
-                    <div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);">
-                        <div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">القسم</div>
-                        <div class="device-detail-value" style="font-weight: 600;">${escapeHtml(item.Category || 'غير محدد')}</div>
-                    </div>
-                    <div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);">
-                        <div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">سعر الشراء</div>
-                        <div class="device-detail-value" style="font-weight: 600;">${parseFloat(item.CostPrice || 0).toFixed(2)} جنيه</div>
-                    </div>
-                    <div class="device-detail-item" style="background: var(--surface-hover); padding: 0.75rem; border-radius: var(--radius-md);">
-                        <div class="device-detail-label" style="font-size: var(--font-size-xs); color: var(--text-muted);">المورد</div>
-                        <div class="device-detail-value" style="font-weight: 600;">${escapeHtml(item.SupplierName)}<br><small>${escapeHtml(item.SupplierPhone)}</small></div>
-                    </div>
-                </div>
-                <h4 style="margin-bottom: 1rem;">الأجهزة المرتبطة</h4>
-                <div class="device-parts-list">${linkedDevices.length === 0 ? '<p class="text-small">لا توجد أجهزة مرتبطة بهذه القطعة</p>' : linkedDevices.map(device => `<div class="device-part-card"><div class="device-part-name">${escapeHtml(device.Name)}</div><div class="detail-row" style="margin-top: 0.5rem;"><span class="detail-label">النوع</span><span>${escapeHtml(device.Type)}</span></div><div class="detail-row"><span class="detail-label">الموديل</span><span>${escapeHtml(device.Model)}</span></div></div>`).join('')}</div>
-            </div>
-        `;
-        openModal('itemDetailsModal');
-    }
-
-    function openSellModal(itemId) {
-        const item = stockItems.find(i => i.ID === itemId);
-        if (!item) return;
-        currentSellItemId = itemId;
-        const modalBody = document.getElementById('sellItemBody');
-        modalBody.innerHTML = `
-            <div class="form-group">
-                <label class="form-label">اسم القطعة</label>
-                <input type="text" class="form-control" value="${escapeHtml(item.Name)}" disabled>
-            </div>
-            <div class="form-group">
-                <label class="form-label">سعر الشراء</label>
-                <input type="text" class="form-control" id="sellCostPrice" value="${parseFloat(item.CostPrice || 0).toFixed(2)}" readonly>
-            </div>
-            <div class="form-group">
-                <label class="form-label required">سعر البيع</label>
-                <input type="number" class="form-control" id="sellPriceInput" placeholder="سعر البيع" step="0.01" oninput="calculateProfit()">
-            </div>
-            <div class="form-group">
-                <label class="form-label">الربح</label>
-                <input type="text" class="form-control" id="profitDisplay" readonly value="0.00">
-            </div>
-        `;
-        openModal('sellItemModal');
-    }
-
-    function calculateProfit() {
-        const costPrice = parseFloat(document.getElementById('sellCostPrice').value) || 0;
-        const sellPrice = parseFloat(document.getElementById('sellPriceInput').value) || 0;
-        const profit = sellPrice - costPrice;
-        document.getElementById('profitDisplay').value = profit.toFixed(2);
-    }
-
-    async function confirmSell() {
-        if (!currentSellItemId) return;
-        const sellPrice = parseFloat(document.getElementById('sellPriceInput').value);
-        if (isNaN(sellPrice) || sellPrice <= 0) {
-            showToast('الرجاء إدخال سعر بيع صحيح', 'warning');
-            return;
-        }
-        const item = stockItems.find(i => i.ID === currentSellItemId);
-        if (!item) return;
-        const profit = sellPrice - (parseFloat(item.CostPrice) || 0);
-        showLoading();
-        const result = await apiCall('SELL_ITEM', { itemId: currentSellItemId, sellPrice: sellPrice, profit: profit });
-        hideLoading();
-        if (result.success) {
-            showToast(`تم بيع القطعة بنجاح. الربح: ${profit.toFixed(2)} جنيه`, 'success');
-            closeModal('sellItemModal');
-            await loadItems();
-            await loadDevicePartsLinks();
-            currentSellItemId = null;
-        } else {
-            showToast(result.error || 'فشل عملية البيع', 'error');
-        }
     }
 
     function handleSearch() { currentSearchQuery = document.getElementById('searchInput').value; renderItems(); renderDevices(); }
