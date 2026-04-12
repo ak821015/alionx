@@ -5670,7 +5670,7 @@ ${JSON.stringify(context, null, 2)}
                         <p><strong>الكود:</strong> ${device.repair_number || device.device_code}</p>
                         <p><strong>رقم الهاتف:</strong> ${device.customer_phone}</p>
                         ${device.customer_email ? `<p><strong>البريد:</strong> ${device.customer_email}</p>` : ''}
-                        <p><strong>المشكلة:</strong> ${device.problem}</p>
+                        <h4><strong>المشكلة:</strong> ${device.problem}</h4>
                         <p><strong>الحالة:</strong> <span class="badge badge-${UI.getStatusBadgeClass(device.status)}">${UI.getStatusText(device.status)}</span></p>
                         <p><strong>الفني:</strong> ${device.opened_by || 'غير محدد'}</p>
                         ${device.other_technician_name ? `<p><strong>تم التحويل إلى:</strong> ${device.other_technician_name}</p>` : ''}
