@@ -862,7 +862,7 @@
     <div class="search-section">
         <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="بحث في القطع والأجهزة والموردين..." onkeyup="handleSearch()">
+            <input type="text" id="searchInput" placeholder="بحث في القطع والأجهزة والموردين... (اضغط Enter)" onkeypress="handleSearchKey(event)">
         </div>
         <div class="filter-bar">
             <select class="filter-select" id="categoryFilter" onchange="filterItems()">
@@ -1060,7 +1060,19 @@
     </div>
 </div>
 
-
+<div class="modal" id="sellItemModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">بيع قطعة غيار</h3>
+            <button class="modal-close" onclick="closeModal('sellItemModal')"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="sellItemBody"></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('sellItemModal')">إلغاء</button>
+            <button class="btn btn-success" onclick="confirmSell()">تأكيد البيع</button>
+        </div>
+    </div>
+</div>
 
 <script>
     const CONFIG = {
@@ -1075,6 +1087,30 @@
     let currentCategoryFilter = 'all';
     let currentSupplierFilter = 'all';
     let currentSellItemId = null;
+
+    // ==================== HELPER FUNCTIONS ====================
+    function normalizeText(text) {
+        if (!text) return '';
+        return String(text)
+            .toLowerCase()
+            .replace(/[أإآ]/g, 'ا')
+            .replace(/ة/g, 'ه')
+            .replace(/ى/g, 'ي')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function deepSearch(obj, query) {
+        if (!query) return true;
+        try {
+            return Object.values(obj).some(val => {
+                if (val === undefined || val === null) return false;
+                return normalizeText(String(val)).includes(query);
+            });
+        } catch (e) {
+            return false;
+        }
+    }
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
@@ -1119,6 +1155,7 @@
         }
     }
 
+    // ==================== API & DATA ====================
     async function apiCall(action, payload = {}) {
         try {
             const formData = new FormData();
@@ -1278,20 +1315,38 @@
         }
     }
 
+    // PROFESSIONAL SEARCH SYSTEM (Ctrl+F like)
+    function handleSearchKey(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSearch();
+        }
+    }
+
+    function handleSearch() {
+        currentSearchQuery = document.getElementById('searchInput').value;
+        renderItems();
+        renderDevices();
+    }
+
     function renderItems() {
         const container = document.getElementById('itemsGrid');
         if (!container) return;
         let filteredItems = [...stockItems];
-        if (currentSearchQuery) {
-            const query = currentSearchQuery.toLowerCase();
-            filteredItems = filteredItems.filter(item => (item.Name && item.Name.toLowerCase().includes(query)) || (item.Type && item.Type.toLowerCase().includes(query)) || (item.Category && item.Category.toLowerCase().includes(query)) || (item.SupplierName && item.SupplierName.toLowerCase().includes(query)) || (item.SupplierPhone && item.SupplierPhone.includes(query)));
+        
+        if (currentSearchQuery && currentSearchQuery.trim() !== '') {
+            const query = normalizeText(currentSearchQuery);
+            filteredItems = filteredItems.filter(item => deepSearch(item, query));
         }
+        
         if (currentCategoryFilter !== 'all') filteredItems = filteredItems.filter(item => item.Category === currentCategoryFilter);
         if (currentSupplierFilter !== 'all') filteredItems = filteredItems.filter(item => item.SupplierID === currentSupplierFilter);
-        if (filteredItems.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>لا توجد قطع غيار</p></div>'; return; }
+        
+        if (filteredItems.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>لا توجد قطع غيار تطابق البحث</p></div>'; return; }
+        
         container.innerHTML = filteredItems.map(item => {
             const linkedDevices = devicePartsLinks.filter(link => link.ItemID === item.ID).map(link => devices.find(d => d.ID === link.DeviceID)).filter(d => d);
-            return `<div class="item-card" onclick="showItemDetails('${item.ID}')"><div class="card-header"><h4 class="card-title">${escapeHtml(item.Name)}</h4><div><span class="card-badge badge-category">${escapeHtml(item.Category || 'غير محدد')}</span></div></div><div class="card-details"><div class="detail-row"><span class="detail-label">النوع</span><span class="detail-value">${escapeHtml(item.Type || 'غير محدد')}</span></div><div class="detail-row"><span class="detail-label">سعر الشراء</span><span class="detail-value">${parseFloat(item.CostPrice || 0).toFixed(2)} جنيه</span></div><div class="detail-row"><span class="detail-label">الحالة</span><span class="detail-value ${item.Status === 'active' ? 'text-success' : 'text-danger'}">${item.Status === 'active' ? 'متوفر' : 'غير متوفر'}</span></div></div><div class="supplier-info"><i class="fas fa-truck"></i> ${escapeHtml(item.SupplierName || 'غير محدد')} | ${escapeHtml(item.SupplierPhone || '')}</div>${linkedDevices.length > 0 ? `<div class="related-items"><span class="detail-label">مرتبط بـ:</span>${linkedDevices.map(device => `<span class="related-tag"><i class="fas fa-mobile-alt"></i> ${escapeHtml(device.Name)}</span>`).join('')}</div>` : ''}<div class="card-actions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-icon btn-sm" onclick="editItem('${item.ID}')" title="تعديل"><i class="fas fa-edit"></i></button><button class="btn btn-success btn-icon btn-sm" onclick="openSellModal('${item.ID}')" title=""><i "></i> </div></div>`;
+            return `<div class="item-card" onclick="showItemDetails('${item.ID}')"><div class="card-header"><h4 class="card-title">${escapeHtml(item.Name)}</h4><div><span class="card-badge badge-category">${escapeHtml(item.Category || 'غير محدد')}</span></div></div><div class="card-details"><div class="detail-row"><span class="detail-label">النوع</span><span class="detail-value">${escapeHtml(item.Type || 'غير محدد')}</span></div><div class="detail-row"><span class="detail-label">سعر الشراء</span><span class="detail-value">${parseFloat(item.CostPrice || 0).toFixed(2)} جنيه</span></div><div class="detail-row"><span class="detail-label">الحالة</span><span class="detail-value ${item.Status === 'active' ? 'text-success' : 'text-danger'}">${item.Status === 'active' ? 'متوفر' : 'غير متوفر'}</span></div></div><div class="supplier-info"><i class="fas fa-truck"></i> ${escapeHtml(item.SupplierName || 'غير محدد')} | ${escapeHtml(item.SupplierPhone || '')}</div>${linkedDevices.length > 0 ? `<div class="related-items"><span class="detail-label">مرتبط بـ:</span>${linkedDevices.map(device => `<span class="related-tag"><i class="fas fa-mobile-alt"></i> ${escapeHtml(device.Name)}</span>`).join('')}</div>` : ''}<div class="card-actions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-icon btn-sm" onclick="editItem('${item.ID}')" title="تعديل"><i class="fas fa-edit"></i></button><button class="btn btn-success btn-icon btn-sm" onclick="openSellModal('${item.ID}')" title="بيع"><i class="fas fa-dollar-sign"></i></button></div></div>`;
         }).join('');
     }
 
@@ -1356,12 +1411,16 @@
         const container = document.getElementById('devicesGrid');
         if (!container) return;
         let filteredDevices = [...devices];
-        if (currentSearchQuery) {
-            const query = currentSearchQuery.toLowerCase();
-            filteredDevices = filteredDevices.filter(device => (device.Name && device.Name.toLowerCase().includes(query)) || (device.Type && device.Type.toLowerCase().includes(query)) || (device.Model && device.Model.toLowerCase().includes(query)) || (device.SupplierName && device.SupplierName.toLowerCase().includes(query)) || (device.SupplierPhone && device.SupplierPhone.includes(query)));
+        
+        if (currentSearchQuery && currentSearchQuery.trim() !== '') {
+            const query = normalizeText(currentSearchQuery);
+            filteredDevices = filteredDevices.filter(device => deepSearch(device, query));
         }
+        
         if (currentSupplierFilter !== 'all') filteredDevices = filteredDevices.filter(device => device.SupplierID === currentSupplierFilter);
-        if (filteredDevices.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-microchip"></i><p>لا توجد أجهزة</p></div>'; return; }
+        
+        if (filteredDevices.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-microchip"></i><p>لا توجد أجهزة تطابق البحث</p></div>'; return; }
+        
         container.innerHTML = filteredDevices.map(device => {
             const linkedParts = devicePartsLinks.filter(link => link.DeviceID === device.ID).map(link => stockItems.find(item => item.ID === link.ItemID)).filter(item => item);
             return `<div class="item-card" onclick="showDeviceDetails('${device.ID}')"><div class="card-header"><h4 class="card-title">${escapeHtml(device.Name)}</h4><span class="card-badge badge-type">${linkedParts.length} قطع</span></div><div class="card-details"><div class="detail-row"><span class="detail-label">النوع</span><span class="detail-value">${escapeHtml(device.Type || 'غير محدد')}</span></div><div class="detail-row"><span class="detail-label">الموديل</span><span class="detail-value">${escapeHtml(device.Model || 'غير محدد')}</span></div><div class="detail-row"><span class="detail-label">سعر الشراء</span><span class="detail-value">${parseFloat(device.CostPrice || 0).toFixed(2)} جنيه</span></div></div><div class="supplier-info"><i class="fas fa-truck"></i> ${escapeHtml(device.SupplierName || 'غير محدد')} | ${escapeHtml(device.SupplierPhone || '')}</div>${linkedParts.length > 0 ? `<div class="related-items"><span class="detail-label">قطع الغيار:</span>${linkedParts.slice(0, 3).map(part => `<span class="related-tag"><i class="fas fa-microchip"></i> ${escapeHtml(part.Name)}</span>`).join('')}${linkedParts.length > 3 ? `<span class="related-tag">+${linkedParts.length - 3}</span>` : ''}</div>` : ''}<div class="card-actions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-icon btn-sm" onclick="editDevice('${device.ID}')" title="تعديل"><i class="fas fa-edit"></i></button></div></div>`;
@@ -1501,7 +1560,6 @@
         }
     }
 
-    function handleSearch() { currentSearchQuery = document.getElementById('searchInput').value; renderItems(); renderDevices(); }
     function filterItems() { currentCategoryFilter = document.getElementById('categoryFilter').value; currentSupplierFilter = document.getElementById('supplierFilter').value; renderItems(); renderDevices(); }
     function resetFilters() { currentSearchQuery = ''; currentCategoryFilter = 'all'; currentSupplierFilter = 'all'; document.getElementById('searchInput').value = ''; document.getElementById('categoryFilter').value = 'all'; document.getElementById('supplierFilter').value = 'all'; renderItems(); renderDevices(); }
     function switchTab(tab) { const itemsTab = document.getElementById('itemsTab'); const devicesTab = document.getElementById('devicesTab'); const tabs = document.querySelectorAll('.tab-btn'); if (tab === 'items') { itemsTab.classList.add('active'); devicesTab.classList.remove('active'); tabs[0].classList.add('active'); tabs[1].classList.remove('active'); renderItems(); } else { itemsTab.classList.remove('active'); devicesTab.classList.add('active'); tabs[0].classList.remove('active'); tabs[1].classList.add('active'); renderDevices(); } }
